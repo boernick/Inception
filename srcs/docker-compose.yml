@@ -1,21 +1,22 @@
 version: '3.8'
 
-# volumes:
-#   wp_data:
-#   mysql_data:
-
-# networks:
-#   my_network:
+networks:
+  my_network:
 
 services:
-  # mariadb:
-  #   build: ./requirements/mariadb
-  #   container_name: mariadb
-  #   restart: always
-  #   volumes:
-  #     - mysql_data:/var/lib/mysql
-  #   networks:
-  #     - my_network
+  mariadb:
+    build: ./requirements/mariadb
+    container_name: mariadb
+    restart: always
+    networks:
+      - my_network
+    environment:
+      - MYSQL_DATABASE=wordpress
+      - MYSQL_USER=wp_user
+      - MYSQL_PASSWORD=wp_pass
+      - MYSQL_ROOT_PASSWORD=rootpass
+    volumes:
+      - mysql_data:/var/lib/mysql
 
   # wordpress:
   #   build: ./requirements/wordpress
@@ -28,14 +29,14 @@ services:
   #   networks:
   #     - my_network
 
-  nginx:
-    build: ./requirements/nginx
-    container_name: nginx
-    restart: always
-    # depends_on:
-    #   - wordpress
-    ports:
-      - "8080:80"
-    # networks:
-    #   - my_network
+  # nginx:
+  #   build: ./requirements/nginx
+  #   container_name: nginx
+  #   restart: always
+  #   # depends_on:
+  #   #   - wordpress
+  #   ports:
+  #     - "8080:80"
+  #   # networks:
+  #   #   - my_network
 
