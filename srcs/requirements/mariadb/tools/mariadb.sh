@@ -1,12 +1,14 @@
 #!/bin/bash
 set -e
 
+chown -R mysql:mysql /var/lib/mysql
+
 if [ ! -d "/var/lib/mysql/mysql" ]; then
-    echo "Initializing database..."
-    mysql_install_db --user=mysql --ldata=/var/lib/mysql
-    mysqld_safe --skip-networking &
+    mariadb-install-db --user=mysql --ldata=/var/lib/mysql
+
+    mysqld_safe --skip-networking --user=mysql &
     sleep 5
-    echo "Creating database and user..."
+
     mysql -u root <<EOF
 CREATE DATABASE IF NOT EXISTS ${MYSQL_DATABASE};
 CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD}';
@@ -19,5 +21,4 @@ EOF
     sleep 2
 fi
 
-echo "Starting MariaDB..."
-exec mysqld_safe
+exec mysqld_safe --user=mysql

@@ -1,13 +1,12 @@
 FROM debian:stable
 
-RUN apt-get update
-RUN apt-get install -y mariadb-server
-RUN apt-get install -y gettext
-RUN apt-get clean
+RUN apt-get update && \
+    apt-get install -y mariadb-server && \
+    apt-get clean
 
-COPY tools/mariadb.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/entrypoint.sh
+COPY tools/mariadb.sh /usr/local/bin/mariadb.sh
+RUN chmod +x /usr/local/bin/mariadb.sh
 
 EXPOSE 3306
 
-ENTRYPOINT ["mariadb.sh"]
+ENTRYPOINT ["/usr/local/bin/mariadb.sh"]
