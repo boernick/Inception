@@ -15,16 +15,16 @@ services:
 volumes:
   mysql_data:
 
-  # wordpress:
-  #   build: ./requirements/wordpress
-  #   container_name: wordpress
-  #   restart: always
-  #   # depends_on:
-  #   #   - mariadb
-  #   volumes:
-  #     - wp_data:/var/www/html
-  #   networks:
-  #     - my_network
+  wordpress:
+    build: ./requirements/wordpress
+    container_name: wordpress
+    restart: always
+    depends_on:
+      - mariadb
+    volumes:
+      - wp_data:/var/www/html
+    networks:
+      - my_network
 
   # nginx:
   #   build: ./requirements/nginx
