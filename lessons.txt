@@ -1,0 +1,96 @@
+NGINX is a high-performance web server and reverse proxy that efficiently distributes and manages 
+incoming internet traffic to optimize speed, scalability, and reliability.
+
+CONTAINERS are a lightweight application-level virtualization method that bundle an app with all its 
+dependencies while sharing the host machine’s OS kernel. Because each container runs as an isolated 
+user-space process, many containers can run on the same system with far less overhead than virtual 
+machines—making them smaller, faster to start, and more efficient for running large numbers of applications.
+
+DOCKER ENGINE is the part of Docker that actually runs your containers. It has two main pieces:
+	- The Docker daemon, which works in the background and takes care of building, running, and managing containers.
+	- The Docker client, which is the tool you use (usually in the terminal) to tell the daemon what to do.
+Together, they let you package your app and everything it needs into a container and run it anywhere.
+
+DOCKERFILE When you write a Dockerfile, you’re basically creating a recipe that tells Docker how to build your application.
+1. You write a Dockerfile
+A Dockerfile is a simple text file where you list step-by-step instructions that tell Docker how to build your application environment.
+
+2. Docker builds an image from it
+When you run docker build, Docker reads your Dockerfile and creates an image — a lightweight package that contains your app, 
+all its code, and everything it needs to run.
+
+3. You run the image as a container
+When you run docker run, Docker starts a container, which is basically a running instance of your image.
+It behaves like a small, isolated mini-computer just for your app.
+
+4. Docker handles isolation and resources
+The Docker engine keeps containers separated from each other and manages their CPU, memory, and storage 
+so they don’t interfere with the rest of your system.
+
+5. You can manage and share containers
+Using Docker commands, you can list, stop, or remove containers.
+You can also upload your images to a registry (like Docker Hub) so you or others can download and reuse them anywhere.
+
+DOCKER COMPOSE FILE is a YAML file that tells Docker how to run multiple containers at the same time and how they should work together.
+	- each service (each container, like backend, database, frontend…)
+	- volumes (persistent storage)
+	- networks (how containers talk to each other)
+
+FROM
+The base image your build starts from.
+✓ “Start with this system/environment.”
+
+RUN
+Runs a command while the image is being built.
+✓ Install software, copy files, set things up.
+
+CMD
+The default command that runs when you start a container.
+✓ “When this container starts, do this.”
+
+Important Docker Compose Keys
+	services
+		Each service is one container in your app.
+		Example: web server, database, cache.
+
+	volumes
+		Persistent storage that survives container restarts.
+		Example: keeping your database data.
+
+	networks
+		Virtual networks that let containers talk to each other.
+		Example: backend ↔ database communication.
+
+COMMON COMMANDS IN DOCKER
+docker build: Used to build a Docker image from a Dockerfile.
+docker run: Used to run a Docker container based on a Docker image.
+docker pull: Used to pull a Docker image from a registry, such as Docker Hub.
+docker push: Used to push a Docker image to a registry.
+docker ps: Used to list the running Docker containers on a system.
+docker stop: Used to stop a running Docker container.
+docker rm: Used to remove a Docker container.
+docker rmi: Used to remove a Docker image.
+docker exec: Used to execute a command in a running Docker container.
+docker logs: Used to view the logs for a Docker container.
+
+COMMON COMMANDS IN DOCKER COMPOSE
+up: Create and start containers
+down: Stop and remove containers, networks, images, and volumes
+start: Start existing containers
+stop: Stop running containers
+restart: Restart running containers
+build: Build images
+ps: List containers
+logs: View output from containers
+exec: Run a command in a running container
+pull: Pull images from a registry
+push: Push images to a registry
+
+WHEN NO MEMORY;
+docker container prune -f && docker builder prune -a -f && docker image prune -a -f && docker volume prune -f
+
+docker compose build --no-cache mariadb
+docker compose up -d #add the -d to run docker in background
+docker ps
+docker exec -it <container-name> bash
+
