@@ -1,8 +1,13 @@
+networks:
+  mynetwork:
+
 services:
   nginx:
     build: ./requirements/nginx
     container_name: nginx
     restart: always
+    networks:
+      - mynetwork
     ports:
       - "8443:443"
 
@@ -11,6 +16,8 @@ services:
     build: ./requirements/mariadb
     container_name: mariadb
     restart: unless-stopped
+    networks:
+      - mynetwork
     env_file: .env
     ports:
       - "3306:3306"
