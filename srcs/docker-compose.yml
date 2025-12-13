@@ -1,19 +1,11 @@
+version: '3.8'
+
 networks:
   mynetwork:
 
 services:
-  nginx:
-    build: ./requirements/nginx
-    container_name: nginx
-    restart: always
-    networks:
-      - mynetwork
-    ports:
-      - "8443:443"
-
   mariadb:
-    image: mariadb
-    build: ./requirements/mariadb
+    image: mariadb:10.11
     container_name: mariadb
     restart: unless-stopped
     networks:
@@ -22,7 +14,27 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - mariadb_data:/var/lib/mysql
+      - /home/${USER}/data/mariadb:/var/lib/mysql
 
-volumes:
-  mariadb_data:
+  wordpress:
+    image: wordpress:6.5
+    container_name: wordpress
+    restart: unless-stopped
+    networks:
+      - mynetwork
+    env_file: .env
+    depends_on:
+      - mariadb
+    ports:
+      - "8080:80"
+    volumes:
+      - /home/${USER}/data/wordpress:/var/www/html
+
+  nginx:
+    build: ./requirements/nginx
+    container_name: nginx
+    restart: always
+    networks:
+      - mynetwork
+    ports:
+      - "8443:443"
