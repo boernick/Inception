@@ -1,7 +1,7 @@
 version: '3.8'
 
 networks:
-  mynetwork:
+  my_network:
 
 volumes:
   wordpress_volume:
@@ -38,7 +38,7 @@ services:
     container_name: mariadb
     restart: unless-stopped
     networks:
-      - mynetwork
+      - my_network
     env_file: .env
     volumes:
       - mariadb_volume:/var/lib/mysql
@@ -48,7 +48,7 @@ services:
     container_name: wordpress
     restart: unless-stopped
     networks:
-      - mynetwork
+      - my_network
     env_file: .env
     depends_on:
       - mariadb
@@ -60,7 +60,7 @@ services:
     container_name: nginx
     restart: always
     networks:
-      - mynetwork
+      - my_network
     ports:
       - "8443:443"
     volumes:
