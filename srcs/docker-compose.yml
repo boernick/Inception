@@ -3,6 +3,35 @@ version: '3.8'
 networks:
   mynetwork:
 
+volumes:
+  wordpress_volume:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/${USER}/data/www/html
+      o: bind
+
+  mariadb_volume:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/${USER}/data/db
+      o: bind
+
+  nginx_logs:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/${USER}/data/logs/nginx
+      o: bind
+
+secrets:
+  ssl_private_key:
+    file: requirements/nginx/keys/nginx-selfsigned.key
+
+  ssl_certificate:
+    file: requirements/nginx/keys/nginx-selfsigned.crt
+
 services:
   mariadb:
     image: mariadb:10.11
@@ -11,10 +40,8 @@ services:
     networks:
       - mynetwork
     env_file: .env
-    ports:
-      - "3306:3306"
     volumes:
-      - /home/${USER}/data/mariadb:/var/lib/mysql
+      - mariadb_volume:/var/lib/mysql
 
   wordpress:
     image: wordpress:6.5
@@ -25,10 +52,8 @@ services:
     env_file: .env
     depends_on:
       - mariadb
-    ports:
-      - "8080:80"
     volumes:
-      - /home/${USER}/data/wordpress:/var/www/html
+      - wordpress_volume:/var/www/html
 
   nginx:
     build: ./requirements/nginx
@@ -38,3 +63,9 @@ services:
       - mynetwork
     ports:
       - "8443:443"
+    volumes:
+      - wordpress_volume:/var/www/html:ro
+      - nginx_logs:/var/log/nginx
+    secrets:
+      - ssl_private_key
+      - ssl_certificate
