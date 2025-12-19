@@ -44,7 +44,7 @@ services:
       - mariadb_volume:/var/lib/mysql
 
   wordpress:
-    image: wordpress:6.5
+    build: ./requirements/wordpress
     container_name: wordpress
     restart: unless-stopped
     networks:
