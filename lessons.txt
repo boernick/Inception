@@ -95,9 +95,7 @@ docker ps
 docker exec -it <container-name> bash
 docker-compose down && docker container prune -f && docker builder prune -a -f && docker image prune -a -f && docker volume prune -f && docker compose build --no-cache nginx && docker compose up -d --remove-orphans  && docker exec -it nginx bash
 
-mariadb -u wp_user -pwp_pass -h 127.0.0.1 -P 3306
-
-
-before evaluation begins you have to create this map:
-mkdir -p /home/$USER/data/mariadb
+docker exec -it mariadb sh
+mysql --protocol=socket --socket=/var/run/mysqld/mysqld.sock -u root -p
+SELECT user, host FROM mysql.user;
 

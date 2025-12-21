@@ -1,11 +1,6 @@
 #!/bin/sh
 set -e
 
-echo $MARIADB_DATABASE
-echo $MARIADB_USER
-echo $MARIADB_PASSWORD
-echo $MARIADB_HOST
-
 chown -R www-data:www-data /var/www
 mkdir -p /etc/php
 
