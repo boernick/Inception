@@ -1,24 +1,22 @@
-FROM debian:stable
+FROM debian:bookworm
 
 # Install MariaDB
-RUN apt-get update && \
-    apt-get install -y mariadb-server && \
-    apt-get clean
+RUN apt-get update && apt-get install -y mariadb-server && \
+    rm -rf /var/lib/apt/lists/*
 
-# Prepare necessary directories and set permissions
-RUN mkdir -p /var/run/mysqld && \
-    chown -R mysql:mysql /var/run/mysqld && \
-    chmod 1777 /run/mysqld
+# Create password files for root/user (from .env or secrets)
+RUN mkdir -p /etc/mariadb && \
+    echo "${MARIADB_ROOT_PASSWORD}" > /etc/mariadb/root_password && \
+    echo "${MARIADB_PASSWORD}" > /etc/mariadb/user_password && \
+    chmod 600 /etc/mariadb/*
 
-# Ensure symlink for socket file
-RUN ln -s /var/lib/mysql/mysql.sock /var/run/mysqld/mysqld.sock
-
-# Copy script to container and make it executable
-COPY tools/mariadb.sh /usr/local/bin/mariadb.sh
+# Copy configuration and startup script
+COPY /tools/mariadb.cnf /etc/mysql/my.cnf
+COPY /tools/mariadb.sh /usr/local/bin/mariadb.sh
 RUN chmod +x /usr/local/bin/mariadb.sh
 
-# Expose port for MariaDB
 EXPOSE 3306
 
-# Set the entry point to run the MariaDB setup script
-ENTRYPOINT ["sh", "/usr/local/bin/mariadb.sh"]
+HEALTHCHECK CMD mysqladmin ping -h localhost || exit 1
+
+ENTRYPOINT ["/usr/local/bin/mariadb.sh"]

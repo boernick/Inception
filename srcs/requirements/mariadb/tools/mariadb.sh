@@ -1,29 +1,42 @@
+#!/bin/bash
 set -e
 
-# Ensure MySQL data directory has the right ownership
-chown -R mysql:mysql /var/lib/mysql
+# Directories
+DATADIR="/var/lib/mysql"
+SOCKET="/var/run/mysqld/mysqld.sock"
+mkdir -p /run/mysqld /var/lib/mysql
+chown -R mysql:mysql /run/mysqld /var/lib/mysql
 
-# Initialize database if it's not already initialized
-if [ ! -d "/var/lib/mysql/mysql" ]; then
-    mariadb-install-db --user=mysql --ldata=/var/lib/mysql
+# Only initialise if database is empty
+if [ ! -d "$DATADIR/mysql" ]; then
+    echo "[MariaDB] Initialising Database..."
+    mariadb-install-db --user=mysql --datadir="$DATADIR" --skip-test-db >/dev/null
 
-    # Start MariaDB without networking initially
-    mysqld_safe --skip-networking --user=mysql &
-    sleep 5
+    echo "[MariaDB] Starting temporary server..."
+    mysqld_safe --datadir="$DATADIR" --socket="$SOCKET" &
 
-    # Run SQL commands to create database, user, and set root password
-    mysql -u root <<EOF
-CREATE DATABASE IF NOT EXISTS ${MYSQL_DATABASE};
-CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD}';
-GRANT ALL PRIVILEGES ON ${MYSQL_DATABASE}.* TO '${MYSQL_USER}'@'%';
-ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';
+    # Wait until MariaDB is ready
+    until mariadb-admin --protocol=socket --socket="$SOCKET" ping --silent; do
+        sleep 1
+    done
+
+    echo "[MariaDB] Creating Database and User..."
+    # Read passwords from files (from .env or secrets)
+    ROOT_PASS_FILE="/etc/mariadb/root_password"
+    USER_PASS_FILE="/etc/mariadb/user_password"
+
+    mariadb --protocol=socket --socket="$SOCKET" -u root <<SQL
+ALTER USER 'root'@'localhost' IDENTIFIED BY '$(cat $ROOT_PASS_FILE)';
+CREATE DATABASE IF NOT EXISTS \`${MARIADB_DATABASE}\`;
+CREATE USER IF NOT EXISTS '${MARIADB_USER}'@'%' IDENTIFIED BY '$(cat $USER_PASS_FILE)';
+GRANT ALL PRIVILEGES ON \`${MARIADB_DATABASE}\`.* TO '${MARIADB_USER}'@'%';
 FLUSH PRIVILEGES;
-EOF
+SQL
 
-    # Kill MariaDB instance after setup
-    killall mysqld
+    echo "[MariaDB] Shutting down temporary server..."
+    mariadb-admin --protocol=socket --socket="$SOCKET" -uroot -p"$(cat $ROOT_PASS_FILE)" shutdown
     sleep 2
 fi
 
-# Start MariaDB normally after setup
-exec mysqld_safe --user=mysql
+echo "[MariaDB] Starting main server..."
+exec mysqld_safe --datadir="$DATADIR" --socket="$SOCKET"

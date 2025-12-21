@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 networks:
   mynetwork:
@@ -11,7 +11,7 @@ volumes:
       device: /home/${USER}/data/www/html
       o: bind
 
-  mariadb_volume:
+  mariadb_volume:    # CHANGED: renamed from db_volume
     driver: local
     driver_opts:
       type: none
@@ -34,15 +34,15 @@ secrets:
 
 services:
   mariadb:
-    image: mariadb:10.11
     container_name: mariadb
+    build: ./requirements/mariadb
     restart: unless-stopped
+    env_file: .env
     networks:
       - mynetwork
-    env_file: .env
     volumes:
       - mariadb_volume:/var/lib/mysql
-
+      
   wordpress:
     build: ./requirements/wordpress
     container_name: wordpress
