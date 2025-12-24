@@ -22,23 +22,25 @@ if [ ! -f "/var/www/html/wp-settings.php" ]; then
             --dbname='${MARIADB_DATABASE}' \
             --dbuser='${MARIADB_USER}' \
             --dbpass='${MARIADB_PASSWORD}' \
-            --dbhost='${MARIADB_HOST}' \
+            --dbhost='${MARIADB_HOST}:${MARIADB_PORT}' \
             --allow-root \
             --path='/var/www/html'"
 else
     echo "WordPress already downloaded."
 fi
 
-# Wait until MariaDB is ready
-while ! mariadb -h "$MARIADB_HOST" -P "$MARIADB_PORT" -u "$MARIADB_USER" -p"$MARIADB_PASSWORD" -e "SELECT 1;" >/dev/null 2>&1; do
+# Wait until MariaDB is ready (disable SSL)
+while ! mariadb --ssl=0 -h "$MARIADB_HOST" -P "$MARIADB_PORT" \
+    -u "$MARIADB_USER" -p"$MARIADB_PASSWORD" -e "SELECT 1;" >/dev/null 2>&1; do
     echo "MariaDB not ready yet... waiting"
     sleep 2
 done
 
 echo "MariaDB connection established"
 
-# Check if WordPress is already installed by inspecting wp_users table
-users_table_exists=$(mariadb -h "$MARIADB_HOST" -P "$MARIADB_PORT" -u "$MARIADB_USER" -p"$MARIADB_PASSWORD" \
+# Check if WordPress is already installed
+users_table_exists=$(mariadb --ssl=0 -h "$MARIADB_HOST" -P "$MARIADB_PORT" \
+    -u "$MARIADB_USER" -p"$MARIADB_PASSWORD" \
     -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='${MARIADB_DATABASE}' AND table_name='wp_users';" -ss)
 
 if [ "$users_table_exists" -eq 0 ]; then
