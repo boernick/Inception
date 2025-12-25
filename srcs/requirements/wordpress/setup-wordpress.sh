@@ -1,61 +1,60 @@
 #!/bin/sh
+# Exit immediately if a command exits with a non-zero status
 set -e
 
+# 1. Ensure correct permissions on the volume
+# This ensures the www-data user can actually write the files
 chown -R www-data:www-data /var/www
-mkdir -p /etc/php
 
-# Install wp-cli if not already installed
-if [ ! -f /etc/php/wp ]; then
-    curl -o /etc/php/wp-cli.phar https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
-    chmod +x /etc/php/wp-cli.phar
-    mv /etc/php/wp-cli.phar /etc/php/wp
-fi
-
-# Download WordPress if not present
-if [ ! -f "/var/www/html/wp-settings.php" ]; then
-    echo "Downloading WordPress..."
-    su -s /bin/bash www-data \
-        -c "/etc/php/wp --allow-root core download --path='/var/www/html'"
-    # Generate wp-config.php from environment variables
-    su -s /bin/bash www-data \
-        -c "/etc/php/wp config create \
-            --dbname='${MARIADB_DATABASE}' \
-            --dbuser='${MARIADB_USER}' \
-            --dbpass='${MARIADB_PASSWORD}' \
-            --dbhost='${MARIADB_HOST}:${MARIADB_PORT}' \
-            --allow-root \
-            --path='/var/www/html'"
-else
-    echo "WordPress already downloaded."
-fi
-
-# Wait until MariaDB is ready (disable SSL)
-while ! mariadb --ssl=0 -h "$MARIADB_HOST" -P "$MARIADB_PORT" \
-    -u "$MARIADB_USER" -p"$MARIADB_PASSWORD" -e "SELECT 1;" >/dev/null 2>&1; do
+echo "Waiting for MariaDB..."
+until mariadb --skip-ssl -h "$MARIADB_HOST" -u "$MARIADB_USER" -p"$MARIADB_PASSWORD" -e "SELECT 1;" > /dev/null 2>&1; do
     echo "MariaDB not ready yet... waiting"
     sleep 2
 done
-
 echo "MariaDB connection established"
 
-# Check if WordPress is already installed
-users_table_exists=$(mariadb --ssl=0 -h "$MARIADB_HOST" -P "$MARIADB_PORT" \
-    -u "$MARIADB_USER" -p"$MARIADB_PASSWORD" \
-    -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='${MARIADB_DATABASE}' AND table_name='wp_users';" -ss)
+# 2. Download WordPress if not already present
+if [ ! -f "/var/www/html/wp-load.php" ]; then
+    echo "Downloading WordPress..."
+    su -s /bin/sh www-data -c "wp core download --path='/var/www/html'"
+fi
 
-if [ "$users_table_exists" -eq 0 ]; then
+# 3. Create wp-config.php using WP-CLI
+# This avoids the "Strange wp-config.php" error by letting the tool build it
+if [ ! -f "/var/www/html/wp-config.php" ]; then
+    echo "Creating wp-config.php..."
+    su -s /bin/sh www-data -c "wp config create \
+        --path='/var/www/html' \
+        --dbname='$MARIADB_DATABASE' \
+        --dbuser='$MARIADB_USER' \
+        --dbpass='$MARIADB_PASSWORD' \
+        --dbhost='$MARIADB_HOST' \
+        --skip-check"
+fi
+
+# 4. Install WordPress if not already installed
+if ! su -s /bin/sh www-data -c "wp core is-installed --path='/var/www/html'"; then
     echo "Installing WordPress..."
-    su -s /bin/bash www-data \
-        -c "/etc/php/wp --allow-root core install \
-            --path='/var/www/html' \
-            --admin_user='${WP_ADMIN_USER}' \
-            --admin_password='${WP_ADMIN_PASSWORD}' \
-            --admin_email='admin@wpepping.42.fr' \
-            --url='http://wpepping.42.fr' \
-            --title='Inception'"
+    su -s /bin/sh www-data -c "wp core install \
+        --path='/var/www/html' \
+        --url='nboer.42.fr' \
+        --title='Inception' \
+        --admin_user='$WP_ADMIN_USER' \
+        --admin_password='$WP_ADMIN_PASSWORD' \
+        --admin_email='admin@nboer.42.fr' \
+        --skip-email"
+    
+    echo "Creating secondary user..."
+    su -s /bin/sh www-data -c "wp user create \
+        $WP_USER $WP_USER_EMAIL \
+        --user_pass=$WP_USER_PASSWORD \
+        --role=author \
+        --path='/var/www/html'"
 else
     echo "WordPress already installed."
 fi
 
-# Start PHP-FPM in foreground
-exec php-fpm8.4 --nodaemonize
+# 5. Start PHP-FPM
+echo "Starting PHP-FPM..."
+# -F keeps it in the foreground so the container doesn't exit
+exec php-fpm8.2 -F

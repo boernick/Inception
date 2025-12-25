@@ -4,3 +4,4 @@ datadir = /var/lib/mysql
 socket = /var/run/mysqld/mysqld.sock
 user = mysql
 skip-networking = 0
+skip-ssl

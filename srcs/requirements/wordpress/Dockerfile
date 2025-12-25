@@ -1,22 +1,25 @@
-FROM debian:stable
+FROM debian:bookworm
 
 RUN apt-get update && apt-get install -y \
-	php-fpm \
-	php-mysql \
-	curl \
-	mariadb-client \
-	&& apt-get clean
+    php8.2-fpm \
+    php8.2-mysqli \
+    mariadb-client \
+    curl \
+    sudo \
+    && apt-get clean
 
-RUN mkdir -p /run/php /var/www/html
+# Install WP-CLI globally
+RUN curl -o /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
+    && chmod +x /usr/local/bin/wp
 
-RUN curl -o /tmp/wordpress.tar.gz https://wordpress.org/latest.tar.gz \
-	&& tar -xzf /tmp/wordpress.tar.gz -C /var/www/html --strip-components=1 \
-	&& rm /tmp/wordpress.tar.gz
+# Create necessary directories
+RUN mkdir -p /run/php /var/www/html && \
+    chown -R www-data:www-data /run/php /var/www/html
 
-COPY www.conf /etc/php/8.4/fpm/pool.d/www.conf
+# Copy configuration files
+COPY www.conf /etc/php/8.2/fpm/pool.d/www.conf
 COPY ./setup-wordpress.sh /usr/local/bin/setup-wordpress.sh
 
-# make file executable
 RUN chmod +x /usr/local/bin/setup-wordpress.sh
 
 WORKDIR /var/www/html

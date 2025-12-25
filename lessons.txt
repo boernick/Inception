@@ -98,4 +98,3 @@ docker-compose down && docker container prune -f && docker builder prune -a -f &
 docker exec -it mariadb sh
 mysql --protocol=socket --socket=/var/run/mysqld/mysqld.sock -u root -p
 SELECT user, host FROM mysql.user;
-
