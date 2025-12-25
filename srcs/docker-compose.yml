@@ -63,8 +63,10 @@ services:
       - mynetwork
     ports:
       - "8443:443"
+    depends_on:
+      - wordpress
     volumes:
-      - wordpress_volume:/var/www/html:ro
+      - wordpress_volume:/var/www/html
       - nginx_logs:/var/log/nginx
     secrets:
       - ssl_private_key
