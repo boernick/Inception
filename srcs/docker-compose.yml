@@ -62,7 +62,7 @@ services:
     networks:
       - mynetwork
     ports:
-      - "8443:443"
+      - "443:443"
     depends_on:
       - wordpress
     volumes:
