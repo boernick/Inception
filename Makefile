@@ -38,20 +38,20 @@ setup: $(DATA_DIR) $(DATA_DIR)/www $(DATA_DIR)/www/html $(DATA_DIR)/db $(DATA_DI
 
 # Build images
 build:
-	docker-compose -f $(COMPOSE_DIR)/docker-compose.yml build
+	docker compose -f $(COMPOSE_DIR)/docker-compose.yml build
 	@echo "✅ Docker images built"
 
 # Start containers
 up: setup
-	docker-compose -f $(COMPOSE_DIR)/docker-compose.yml up -d
+	docker compose -f $(COMPOSE_DIR)/docker-compose.yml up -d
 	@echo "✅ Docker containers are up"
 
 # Stop containers
 down:
-	docker-compose -f $(COMPOSE_DIR)/docker-compose.yml down
+	docker compose -f $(COMPOSE_DIR)/docker-compose.yml down
 	@echo "✅ Docker containers stopped"
 
 # Remove containers and volumes
 clean:
-	docker-compose -f $(COMPOSE_DIR)/docker-compose.yml down -v
+	docker compose -f $(COMPOSE_DIR)/docker-compose.yml down -v
 	@echo "🧹 Docker containers and volumes removed"
