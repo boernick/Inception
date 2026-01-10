@@ -1,0 +1,42 @@
+# Git
+.git
+.gitignore
+
+# Env files
+.env
+*.env
+
+# Editor / OS junk
+.DS_Store
+*.swp
+*.swo
+*~
+.vscode
+.idea
+
+# Logs
+*.log
+logs/
+log/
+
+# Temporary files
+tmp/
+temp/
+.cache
+.cache/
+
+# Archives
+*.tar
+*.gz
+*.zip
+
+# Node / Python junk (safety)
+node_modules
+__pycache__
+
+# Docker compose files (should not be inside images)
+docker-compose.yml
+docker-compose.yaml
+
+# Makefile
+Makefile
