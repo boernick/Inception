@@ -11,7 +11,7 @@ volumes:
       device: /home/${USER}/data/www/html
       o: bind
 
-  mariadb_volume:    # CHANGED: renamed from db_volume
+  mariadb_volume:
     driver: local
     driver_opts:
       type: none

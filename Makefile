@@ -1,5 +1,3 @@
-# 42 Inception Docker Makefile - adjusted for Docker Compose v2
-
 COMPOSE_DIR := srcs
 USER_HOME := /home/$(USER)
 DATA_DIR := $(USER_HOME)/data

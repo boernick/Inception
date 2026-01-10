@@ -2,8 +2,7 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
-# 1. Ensure correct permissions on the volume
-# This ensures the www-data user can actually write the files
+# Ensure correct permissions on the volume
 chown -R www-data:www-data /var/www
 
 echo "Waiting for MariaDB..."
@@ -13,14 +12,13 @@ until mariadb --skip-ssl -h "$MARIADB_HOST" -u "$MARIADB_USER" -p"$MARIADB_PASSW
 done
 echo "MariaDB connection established"
 
-# 2. Download WordPress if not already present
+# Download WordPress if not already present
 if [ ! -f "/var/www/html/wp-load.php" ]; then
     echo "Downloading WordPress..."
     su -s /bin/sh www-data -c "wp core download --path='/var/www/html'"
 fi
 
-# 3. Create wp-config.php using WP-CLI
-# This avoids the "Strange wp-config.php" error by letting the tool build it
+# Create wp-config.php using WP-CLI
 if [ ! -f "/var/www/html/wp-config.php" ]; then
     echo "Creating wp-config.php..."
     su -s /bin/sh www-data -c "wp config create \
@@ -32,7 +30,7 @@ if [ ! -f "/var/www/html/wp-config.php" ]; then
         --skip-check"
 fi
 
-# 4. Install WordPress if not already installed
+# Install WordPress if not already installed
 if ! su -s /bin/sh www-data -c "wp core is-installed --path='/var/www/html'"; then
     echo "Installing WordPress..."
     su -s /bin/sh www-data -c "wp core install \
@@ -54,7 +52,7 @@ else
     echo "WordPress already installed."
 fi
 
-# 5. Start PHP-FPM
+# Start PHP-FPM
 echo "Starting PHP-FPM..."
 # -F keeps it in the foreground so the container doesn't exit
 exec php-fpm8.2 -F

@@ -1,3 +1,0 @@
-in wordpress container -> php installeren
-
-volume is een gedeelde map van pc & container. modat php en nginx allebei toegang moeten hebben to de locatie van wordpress
