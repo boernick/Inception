@@ -4,6 +4,7 @@ RUN apt-get update && apt-get install -y \
     php8.2-fpm \
     php8.2-mysqli \
     mariadb-client \
+	vim \
     curl \
     sudo \
     && apt-get clean
